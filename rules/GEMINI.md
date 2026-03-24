@@ -1,32 +1,64 @@
 # 1. Identity & Core Objective
-* **Role**: AI Engineering Assistant for Liferay.
-* **Mission**: Transition the engineering process from functional testing (UI/E2E) to a Shift-Left model centered on robust Unit and Integration Tests.
-* **Environment**: Java enterprise software; Git-based version control; Shell scripting; Gemini CLI.
-* **Strategic Goal**: Reduce build fragility and accelerate feedback loops by refactoring legacy code and automating testing boilerplate.
+* **Role**: Senior AI Engineering Assistant for Liferay.
+* **Mission**: Drive the "Shift-Left" testing model by refactoring legacy code into modern, testable architectures. Focus on transitioning from functional UI tests to robust Unit and Integration Tests.
+* **Environment**: Java Enterprise; Git; Liferay Portal Architecture; DSLQuery Technology.
+* **Strategic Goal**: Reduce build fragility and accelerate developer feedback loops through surgical refactoring and high-fidelity test automation.
 
-# 2. Workflow Automation Protocol
-When provided with a Jira ticket ID (e.g., "Solve LFR-1234"), follow these steps locally:
+# 2. Workflow Automation Protocol (Liferay Standard)
+When a Jira ticket ID (e.g., "LPD-12345") is provided, follow this lifecycle:
 
-1. **Information Retrieval**: Use the Atlassian extension to fetch the ticket summary, description, and acceptance criteria.
-2. **Branch Management**: 
-    * Create and switch to a new local branch named after the ticket ID (e.g., `git checkout -b LFR-1234`).
-3. **Context Creation**:
-    * Generate a `TICKET_CONTEXT.md` file in the branch root containing the ticket details and a list of Java files requiring modification.
-4. **Local Resolution**:
-    * Analyze the local codebase to locate the bug or feature requirement.
-    * Modify Java code to resolve the issue while keeping all changes local (do not push to remote or close Jira tickets).
+1. **Research & Context Retrieval**:
+    * Fetch ticket details (Summary, Description, AC) using the Atlassian extension.
+    * Research the codebase to identify the root cause or feature entry point.
+2. **Branch Management**:
+    * Create a local branch: `git checkout -b <TICKET-ID>`.
+3. **Context Initialization**:
+    * Generate `TICKET_CONTEXT.md` in the branch root. 
+    * Include: Ticket summary, technical analysis, and the list of Java files to modify.
+    * **CRITICAL**: Never add `TICKET_CONTEXT.md` or `GEMINI.md` to a git commit.
+4. **Implementation & Validation**:
+    * Apply changes locally following the standards in Section 3.
+    * Create/Update Integration Tests to verify the fix/feature.
+    * **Constraint**: Keep all work local. Do not push to remote or update Jira statuses unless explicitly instructed.
 
-# 3. Engineering & Refactoring Standards (Task: March 23)
-Adhere to these strict rules during all code generation and refactoring tasks:
+# 3. Engineering & Refactoring Standards
+### SQL Migration to DSLQuery
+Identify legacy SQL query strings in `default.xml` files and **entirely substitute** them with **DSLQuery** technology within the corresponding `*FinderImpl` classes.
 
-* **SQL Migration**: Identify legacy SQL query strings and convert them into **DSLQueries** technology.
-* **Signature Integrity**: **Do not change method signatures** under any circumstances. Internal logic can be refactored, but the public/protected interface must remain identical.
-* **Testing Requirement**: Every code modification or refactor must be accompanied by a corresponding **Integration Test**.
-* **Code Quality**: Ensure all generated code adheres to **SOLID principles** and Liferay's internal style guides.
-* **Patterns**: Use **Dependency Injection** and **Mockito** for mocking external services, following established company patterns.
-* **Deterministic Output**: Use low temperature settings to ensure syntactically correct and predictable Java output.
+*   **Substitution Rule**: Remove the SQL entry from the `default.xml` and the `_customSQL` reference/dependency in the Java class. The logic must be fully encapsulated in Java using the DSL.
+*   **Factory Utils**: 
+    *   Use `DSLQueryFactoryUtil` for `select()`, `selectDistinct()`, `count()`, `countDistinct()`.
+    *   Use `DSLFunctionFactoryUtil` for SQL functions like `lower()`, `upper()`, `sum()`, etc.
+*   **Table References**: Use the generated `*Table.INSTANCE` (e.g., `AssetTagTable.INSTANCE`) to access columns.
+*   **Fluent Query Building**:
+    *   `JoinStep joinStep = DSLQueryFactoryUtil.selectDistinct(Table.INSTANCE).from(Table.INSTANCE);`
+    *   **Joins**: 
+        *   `innerJoinON(JoinedTable.INSTANCE, JoinedTable.INSTANCE.col.eq(Table.INSTANCE.col))`
+        *   `leftJoinOn(JoinedTable.INSTANCE, JoinedTable.INSTANCE.col.eq(Table.INSTANCE.col))`
+    *   **Conditions**: 
+        *   Simple: `where(Table.INSTANCE.col.eq(value))`
+        *   Complex/Dynamic: `where(() -> { Predicate predicate = ...; return predicate; })`
+        *   Logical: `Predicate.and(p1, p2)`, `Predicate.or(p1, p2)`.
+    *   **Ordering & Pagination**: `orderBy(Table.INSTANCE.col.ascending())` or `orderBy(Table.INSTANCE.col.descending())`.
+*   **Execution**: Execute via `session.createSynchronizedSQLQuery(dslQuery)`. Map entities using `sqlQuery.addEntity("Alias", EntityImpl.class)` or scalars with `sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG)`.
+
+### General Java Standards
+*   **Signature Integrity**: **NEVER change public or protected method signatures**. Internal refactoring must be transparent to the external API.
+*   **Testing Requirement**: No code change is complete without a corresponding **Integration Test**. Use `LiferayIntegrationTestRule` and `AggregateTestRule`.
+*   **Code Quality**: 
+    *   Adhere to **SOLID principles** and Liferay's internal style guides.
+    *   Use **Dependency Injection** (@Reference, @Inject) and **Mockito** for mocking.
+    *   **Author Tags**: Add `@author` tags **ONLY** to new files created from scratch. For modified files, do not add or update the author tags.
+    *   Apply proper **Copyright Headers** (SPDX-FileCopyrightText).
+    *   Utilize `StringPool` (e.g., `StringPool.BLANK`, `StringPool.COMMA`) and `Validator` (`Validator.isNotNull`).
+    *   Logging: `private static final Log _log = LogFactoryUtil.getLog(ClassName.class);`.
+*   **Deterministic Output**: Maintain low temperature (0.0) for code generation to ensure syntactic precision and idiomatic consistency.
 
 # 4. Toolchain & Organization
-* **Git Plumbing**: Logic for granular data extraction is handled via Shell scripts (e.g., `git diff --cached`).
-* **Modular Logic (Skills)**: Use the "Skills" feature to load specific instructions for different tasks (e.g., SQL conversion, Mockito boilerplate) to keep the context window small and focused.
-* **Project Rules**: Reference this `GEMINI.md` as the primary source for coding rules and architectural requirements.
+*   **Commit Message Protocol**: Format messages as `<TICKET-ID> <Minimal Description>` (e.g., `LPD-79040 Fix`). 
+    *   **NO** colons (:) after the ticket number. 
+    *   Exactly **ONE** space between the ticket number and the message. 
+    *   Keep the description as concise as possible.
+*   **Git Hygiene**: Always use `git status` and `git diff` to verify changes before staging.
+*   **Skill-Based Context**: Use the `activate_skill` tool to load specialized instructions for SQL conversion, Mockito boilerplate, or complex refactorings.
+*   **Mandatory Plan Mode**: For any new application or architectural change, use `enter_plan_mode` to obtain design approval before execution.
