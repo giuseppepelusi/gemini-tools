@@ -1,28 +1,6 @@
-# 1. Identity & Core Objective
-* **Role**: Senior AI Engineering Assistant for Liferay.
-* **Mission**: Drive the "Shift-Left" testing model by refactoring legacy code into modern, testable architectures. Focus on transitioning from functional UI tests to robust Unit and Integration Tests.
-* **Environment**: Java Enterprise; Git; Liferay Portal Architecture; DSLQuery Technology.
-* **Strategic Goal**: Reduce build fragility and accelerate developer feedback loops through surgical refactoring and high-fidelity test automation.
+# Liferay Engineering & Refactoring Standards
 
-# 2. Workflow Automation Protocol (Liferay Standard)
-When a Jira ticket ID (e.g., "LPD-12345") is provided, follow this lifecycle:
-
-1. **Research & Context Retrieval**:
-    * Fetch ticket details (Summary, Description, AC) using the Atlassian extension.
-    * Research the codebase to identify the root cause or feature entry point.
-2. **Branch Management**:
-    * Create a local branch: `git checkout -b <TICKET-ID>`.
-3. **Context Initialization**:
-    * Generate `TICKET_CONTEXT.md` in the branch root. 
-    * Include: Ticket summary, technical analysis, and the list of Java files to modify.
-    * **CRITICAL**: Never add `TICKET_CONTEXT.md` or `GEMINI.md` to a git commit.
-4. **Implementation & Validation**:
-    * Apply changes locally following the standards in Section 3.
-    * Create/Update Integration Tests to verify the fix/feature.
-    * **Constraint**: Keep all work local. Do not push to remote or update Jira statuses unless explicitly instructed.
-
-# 3. Engineering & Refactoring Standards
-### SQL Migration to DSLQuery
+## SQL Migration to DSLQuery
 Identify legacy SQL query strings in `default.xml` files and **entirely substitute** them with **DSLQuery** technology within the corresponding **`*LocalServiceImpl`** classes.
 
 *   **Substitution Rule**: Remove the SQL entry from the `default.xml` and the `_customSQL` reference/dependency in the Java class. The logic must be fully encapsulated in the service method using the DSL.
@@ -45,23 +23,14 @@ Identify legacy SQL query strings in `default.xml` files and **entirely substitu
         *   Logical: `Predicate.and(p1, p2)`, `Predicate.or(p1, p2)`.
     *   **Ordering & Pagination**: `orderBy(Table.INSTANCE.col.ascending())` or `orderBy(Table.INSTANCE.col.descending())`.
 
-### General Java Standards
+## General Java Standards
 *   **Signature Integrity**: **NEVER change public or protected method signatures**. Internal refactoring must be transparent to the external API.
 *   **Testing Requirement**: No code change is complete without a corresponding **Integration Test**. Use `LiferayIntegrationTestRule` and `AggregateTestRule`.
 *   **Code Quality**: 
     *   Adhere to **SOLID principles** and Liferay's internal style guides.
-    *   Use **Dependency Injection** (@Reference, @Inject) and **Mockito** for mocking.
+    *   Use **Dependency Injection** (`@Reference`, `@Inject`) and **Mockito** for mocking.
     *   **Author Tags**: Add `@author` tags **ONLY** to new files created from scratch. For modified files, do not add or update the author tags.
     *   Apply proper **Copyright Headers** (SPDX-FileCopyrightText).
     *   Utilize `StringPool` (e.g., `StringPool.BLANK`, `StringPool.COMMA`) and `Validator` (`Validator.isNotNull`).
     *   Logging: `private static final Log _log = LogFactoryUtil.getLog(ClassName.class);`.
 *   **Deterministic Output**: Maintain low temperature (0.0) for code generation to ensure syntactic precision and idiomatic consistency.
-
-# 4. Toolchain & Organization
-*   **Commit Message Protocol**: Format messages as `<TICKET-ID> <Minimal Description>` (e.g., `LPD-79040 Fix`). 
-    *   **NO** colons (:) after the ticket number. 
-    *   Exactly **ONE** space between the ticket number and the message. 
-    *   Keep the description as concise as possible.
-*   **Git Hygiene**: Always use `git status` and `git diff` to verify changes before staging.
-*   **Skill-Based Context**: Use the `activate_skill` tool to load specialized instructions for SQL conversion, Mockito boilerplate, or complex refactorings.
-*   **Mandatory Plan Mode**: For any new application or architectural change, use `enter_plan_mode` to obtain design approval before execution.
