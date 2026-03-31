@@ -29,6 +29,7 @@ Identify legacy SQL query strings in `default.xml` files and **entirely substitu
 *   **Code Quality**: 
     *   Adhere to **SOLID principles** and Liferay's internal style guides.
     *   Use **Dependency Injection** (`@Reference`, `@Inject`) and **Mockito** for mocking.
+    *   **Comments**: Never include informative comments (e.g., explaining trivial logic or adding redundant documentation), as per Liferay guidelines.
     *   **Author Tags**: Add `@author` tags **ONLY** to new files created from scratch. For modified files, do not add or update the author tags.
     *   Apply proper **Copyright Headers** (SPDX-FileCopyrightText).
     *   Utilize `StringPool` (e.g., `StringPool.BLANK`, `StringPool.COMMA`) and `Validator` (`Validator.isNotNull`).
