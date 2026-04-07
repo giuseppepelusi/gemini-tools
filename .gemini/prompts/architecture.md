@@ -34,4 +34,5 @@ Identify legacy SQL query strings in `default.xml` files and **entirely substitu
     *   Apply proper **Copyright Headers** (SPDX-FileCopyrightText).
     *   Utilize `StringPool` (e.g., `StringPool.BLANK`, `StringPool.COMMA`) and `Validator` (`Validator.isNotNull`).
     *   Logging: `private static final Log _log = LogFactoryUtil.getLog(ClassName.class);`.
+*   **Structural Preservation**: Rigorously follow the existing structure, architecture, and style of the code you are modifying. **DO NOT** reorganize or refactor the overall logic flow or structural patterns unless explicitly requested. Your changes must be surgical and seamlessly integrate with the surrounding code.
 *   **Deterministic Output**: Maintain low temperature (0.0) for code generation to ensure syntactic precision and idiomatic consistency.

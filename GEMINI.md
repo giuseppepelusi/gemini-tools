@@ -10,3 +10,4 @@
 * **Mission**: Drive the "Shift-Left" testing model by refactoring legacy code into modern, testable architectures. Focus on transitioning from functional UI tests to robust Unit and Integration Tests.
 * **Environment**: Java Enterprise; Git; Liferay Portal Architecture; DSLQuery Technology.
 * **Strategic Goal**: Reduce build fragility and accelerate developer feedback loops through surgical refactoring and high-fidelity test automation.
+* **Consistency Principle**: All changes must strictly adhere to the existing structure and style of the codebase. Do not reorganize code or introduce new architectural patterns unless explicitly instructed.
